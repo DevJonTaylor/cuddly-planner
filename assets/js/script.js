@@ -1,14 +1,22 @@
 /**
  * This class controls the elements of the time block, including managing the state and data.
+ * @property {moment} moment A moment object specifically for this TimeBlock.
+ * @property {jQuery} container A jQuery object with a reference to the TimeBlock.
+ * @property {string} messageStr The string that is displayed as the event name.
+ * @property {boolean} isEditing Defines if the TimeBlock is being edited to ensure the new content is not overwritten.
+ * @property {boolean} isUnsaved Defines if the TimeBlock has unsaved work.
  */
 class TimeBlock {
-  // TODO:  Document this class.
+  /**
+   * Creates the contents of the time block by passing the HTML directly into jQuery.
+   * @param {moment} momentObj
+   */
   constructor(momentObj) {
     this.moment = momentObj === undefined ? moment() : momentObj;
     this.container = jQuery(`<section class="row time-block" data-block-id="${this.id}">
-    <article class="hour col-1"></article>
-    <article class="col-10 past pt-1" contenteditable="true"></article> 
-    <button class="saveBtn col-1"><i class="fa fa-save"></i></button>
+    <article class="hour col-2 col-lg-1"></article>
+    <article class="col-8 col-lg-10 past pt-1" contenteditable="true"></article> 
+    <button class="saveBtn col-2 col-lg-1"><i class="fa fa-save"></i></button>
 </section>`)
     this.messageStr = '';
     this.isEditing = false;
@@ -16,50 +24,89 @@ class TimeBlock {
     this.updateDisplay();
   }
 
+  /**
+   * Returns the hour element as a jQuery object.  This is where the hour will be displayed.
+   * @returns {jQuery}
+   */
   get hourElement() {
     return this.container.find('.hour');
   }
 
+  /**
+   * Returns the message element as a jQuery object.  This is where the event name is displayed.
+   * @returns {jQuery}
+   */
   get messageElement() {
     return this.container.find('[contenteditable]');
   }
 
-  get buttonElement() {
-    return this.container.find('.saveBtn');
-  }
-
+  /**
+   * The container to append the TimeBlock to.
+   * @param {string|jQuery|HTMLElement} container If a string is passed it is expected to be a CSS Selector.
+   */
   appendTo(container) {
     // Using jQuery here to allow selectors, elements, and jQuery objects.
     jQuery(container).append(this.container);
   }
 
+  /**
+   * Get the message string that is currently saved.  This may or may not be the innerText that is rendered.
+   * @returns {string}
+   */
   get message() {
     return this.messageStr;
   }
 
+  /**
+   * Sets the message string that should be saved.  This may or may not be the innerText that is rendered.
+   * @param {string} str
+   */
   set message(str) {
     this.messageStr = str;
   }
 
+  /**
+   * The id for ease and readability purposes is the hour it represents.  This returns the current ID.
+   * @returns {string}
+   */
   get id() {
     return this.moment.format('hhA');
   }
 
+  /**
+   * Returns if we are currently past the hour this time block represents.
+   * @returns {boolean}
+   */
   get isPast() {
     return this.moment.hours() < moment().hours();
   }
 
+  /**
+   * Returns if we are currently before the hour this time block represents.
+   * @returns {boolean}
+   */
   get isFuture() {
     return this.moment.hours() > moment().hours();
   }
 
+  /**
+   * This method updates the HTML to reflect properly.
+   */
   updateDisplay() {
+    // Updating the ID.
     this.container.attr('data-block-id', this.id);
+
+    // Updating the hour text.
     this.hourElement.text(this.id);
 
+    // If isEditing is false then render message string.
     if(!this.isEditing) this.messageElement.text(this.messageStr);
+
+    // If isUnsaved is false then remove class for bold font and if it is true add it.
     if(!this.isUnsaved) this.messageElement.removeClass('font-weight-bold');
     else this.messageElement.addClass('font-weight-bold');
+
+    // Setting color classes based on if it is past the event hour or not.
     if(this.isPast) {
       this.messageElement
         .removeClass('present', 'future')
@@ -75,6 +122,10 @@ class TimeBlock {
     }
   }
 
+  /**
+   * Creates a representation of the TimeBlock using a literal object.
+   * @returns {{date: string, message: string}}
+   */
   toObject() {
     return {
       date: this.moment.format('x'),
@@ -82,25 +133,43 @@ class TimeBlock {
     }
   }
 
+  /**
+   * Utilizes JSON.stringify combined with toObject method.
+   * @returns {string}
+   */
   toString() {
     return JSON.stringify(this.toObject());
   }
 
+  /**
+   * Defines if the TimeBlock is being edited right now.
+   * @param {boolean} isEditing
+   */
   editing(isEditing) {
     this.isEditing = isEditing;
   }
 
+  /**
+   * Defines if the TimeBlock has an unsaved message or not.
+   * @param {boolean} isUnsaved
+   */
   unsaved(isUnsaved) {
     this.isUnsaved = isUnsaved;
   }
 
+  /**
+   * Updates the message string to match what is being displayed currently.
+   */
   save() {
-    this.messageStr = this.messageElement.text();
+    this.message = this.messageElement.text();
     this.isEditing = false;
     this.isUnsaved = false;
     this.updateDisplay();
   }
 
+  /**
+   * Takes what is currently saved to the message string and renders it to the page.
+   */
   revert() {
     this.isEditing = false;
     this.isUnsaved = false;
@@ -108,7 +177,12 @@ class TimeBlock {
   }
 }
 
-// TODO: Document this class.
+/**
+ * This class handles the main interaction of the TimeBlock objects as well as saves and loads to the localStorage.
+ * @property {jQuery} container A jQuery object for the Time Block container.
+ * @property {{string: TimeBlock}} timeBlocks The container for TimeBlock objects.
+ * @property {number} interval So that the if we needed down the road we can easily cancel the interval that is set.
+ */
 class TimeBlocks {
   constructor(container) {
     this.container = jQuery(container);
@@ -116,6 +190,10 @@ class TimeBlocks {
     this.interval = setInterval(this.updateDisplay.bind(this), 1000);
   }
 
+  /**
+   * Returns an Array with TimeBlock.toObjects.
+   * @returns {[{date: string, message: string}]}
+   */
   toObject() {
     let timeBlocks = [];
     for(let k in this.timeBlocks) {
@@ -125,64 +203,124 @@ class TimeBlocks {
     return timeBlocks;
   }
 
+  /**
+   * Returns a JSON.stringify toObject method.
+   * @returns {string}
+   */
   toString() {
     return JSON.stringify(this.toObject());
   }
 
+  /**
+   * This method iterates through the TimeBlocks and instructs them to updateDisplay.
+   */
   updateDisplay() {
     for(let k in this.timeBlocks) {
       this.timeBlocks[k].updateDisplay();
     }
   }
 
+  /**
+   * A TimeBlock factory.
+   * @param {moment} momentObj
+   */
   timeBlock(momentObj) {
     let timeBlock = new TimeBlock(momentObj);
     timeBlock.appendTo(this.container);
     this.timeBlocks[timeBlock.id] = timeBlock;
   }
 
+  /**
+   * Returns a TimeBlock objects by the ID.
+   * @param {string} id
+   * @returns {TimeBlock}
+   */
   getTimeBlock(id) {
     return this.timeBlocks[id];
   }
 
+  /**
+   * Accepts a TimeBlock ID then sets isEditing to true.
+   * @param {string} id
+   */
   editing(id) {
     this.getTimeBlock(id).editing(true);
   }
 
+  /**
+   * Returns a TimeBlock.isEditing property by TimeBlock ID.
+   * @param {string} id
+   * @returns {boolean}
+   */
   isEditing(id) {
     return this.getTimeBlock(id).isEditing;
   }
 
+  /**
+   * Looks up a TimeBlock then sets isUnsaved to true.
+   * @param {string} id
+   */
   isDone(id) {
     this.getTimeBlock(id).unsaved(true)
   }
 
+  /**
+   * Looks up a TimeBlock by ID then instructs the TimeBlock to save the currently displaying content.
+   * @param {string} id
+   */
   save(id) {
     this.getTimeBlock(id).save();
   }
 
+  /**
+   * Looks up a TimeBlock then instructs it to revert all content to its saved content.
+   * @param {string} id
+   */
   revert(id) {
     this.getTimeBlock(id).revert();
   }
 
+  /**
+   * Looks up a TimeBlock and returns the currently displayed message string.
+   * @param {string} id
+   * @returns {string}
+   */
   getElementText(id) {
     return this.getTimeBlock(id).messageElement.text();
   }
 
+  /**
+   * Looks up a TimeBlock by the ID then returns the currently saved message string.
+   * This may or may not be what is currently displayed.
+   * @param {string} id
+   * @returns {string}
+   */
   getMessageText(id) {
     return this.getTimeBlock(id).message;
   }
 
+  /**
+   * Takes a child element either jQuery or HTMLElement and finds the container that has the TimeBlock ID
+   * It then returns the TimeBlock ID.
+   * @param {HTMLElement|jQuery} eventTarget
+   * @returns {string}
+   */
   findId(eventTarget) {
     return jQuery(eventTarget)
       .closest('[data-block-id]')
       .attr('data-block-id');
   }
 
+  /**
+   * Iterates through all TimeBlocks and saves them to localStorage as a JSON.stringify.  See toString method.
+   */
   saveToLocalStorage() {
     localStorage.setItem('time-blocks', `${this}`);
   }
 
+  /**
+   * Loads the saved data from localStorage and iterates through it loading events that are validate for today.
+   */
   loadFromLocalStorage() {
     let blocks = localStorage.getItem('time-blocks');
     if(blocks === null) blocks = [];
