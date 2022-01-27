@@ -4,3 +4,10 @@
 // TODO:  Confirm save modal.
 // TODO:  localStorage to save the data on refresh.
 
+// The format used to display the date
+const momentDateFormat = 'dddd, MMMM Do';
+
+jQuery(function($) {
+  // Displaying current date at top of the page.
+  $('#currentDay').text(moment().format(momentDateFormat));
+});
