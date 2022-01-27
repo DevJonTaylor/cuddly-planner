@@ -29,11 +29,31 @@
       <p id="currentDay" class="lead"></p>
     </header>
     <div class="container">
-      <!-- Timeblocks go here -->
+      <main id="time-blocks">
+
+      </main>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <script src="./assets/js/script.js"></script>;
   </body>
+  <div class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Save Event</h5>
+        </div>
+        <div class="modal-body">
+          <p id="modal-body"></p>
+        </div>
+        <div class="modal-footer d-flex justify-content-between">
+          <button type="button" class="btn btn-danger" data-dismiss="modal" id="revert-changes">Revert Changes</button>
+          <button type="button" class="btn btn-primary" id="save-changes" data-dismiss="modal">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </html>
