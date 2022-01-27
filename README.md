@@ -2,7 +2,7 @@
 ![HTML 32.6%](https://img.shields.io/badge/HTML-15%25-%23dd4b25?logo=html5&style=plastic)
 ![CSS 2.7%](https://img.shields.io/badge/CSS-7%25-%23146eb0?logo=css3&style=plastic)
 ![JAVASCRIPT 64.7%](https://img.shields.io/badge/JavaScript-78%25-%23e9d44d?logo=javascript&style=plastic)
-![jQuery](https://img.shields.io/badge/jQuery-v3.3.1-%230769ad?logo=jquery&style=plastic)
+![jQuery](https://img.shields.io/badge/jQuery-v3.4.1-%230769ad?logo=jquery&style=plastic)
 ![Bootstrap 4](https://img.shields.io/badge/Bootstrap-v4.3.1-%238211f9?logo=bootstrap&style=plastic)
 ![FontAwesome](https://img.shields.io/badge/FontAwesome-v5-white?logo=fontawesome&style=plastic)
 ![MomentJS](https://img.shields.io/badge/moment.js-v2.24-white?style=plastic)
