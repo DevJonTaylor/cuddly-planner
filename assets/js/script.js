@@ -188,10 +188,11 @@ class TimeBlocks {
     if(blocks === null) blocks = [];
     else blocks = JSON.parse(blocks);
     for(let block of blocks) {
-      if(block.message === '') break;
-      let momentObj = moment(parseInt(block.date));
-      if(momentObj.date() === moment().date()) {
-        this.timeBlocks[momentObj.format('hhA')].message = block.message;
+      if(block.message !== '') {
+        let momentObj = moment(parseInt(block.date));
+        if(momentObj.date() === moment().date()) {
+          this.timeBlocks[momentObj.format('hhA')].message = block.message;
+        }
       }
     }
 
