@@ -1,19 +1,8 @@
-// TODO:  Display Date at the top of the page.
-// TODO:  Create time blocks for standard business hours. (9-5)
-// TODO:  Time blocks are contenteditable.
-// TODO:  Confirm save modal.
-// TODO:  localStorage to save the data on refresh.
-/*
-<section className="row time-block">
-  <article className="hour col-1">9AM</article>
-  <article className="future col-10 description">
-    <p contentEditable="true">Sup</p>
-  </article>
-  <button className="saveBtn col-1"><i className="fa fa-save"></i></button>
-</section>
-*/
-
+/**
+ * This class controls the elements of the time block, including managing the state and data.
+ */
 class TimeBlock {
+  // TODO:  Document this class.
   constructor(momentObj) {
     this.moment = momentObj === undefined ? moment() : momentObj;
     this.container = jQuery(`<section class="row time-block" data-block-id="${this.id}">
@@ -119,6 +108,7 @@ class TimeBlock {
   }
 }
 
+// TODO: Document this class.
 class TimeBlocks {
   constructor(container) {
     this.container = jQuery(container);
@@ -188,26 +178,53 @@ class TimeBlocks {
       .closest('[data-block-id]')
       .attr('data-block-id');
   }
+
+  saveToLocalStorage() {
+    localStorage.setItem('time-blocks', `${this}`);
+  }
+
+  loadFromLocalStorage() {
+    let blocks = localStorage.getItem('time-blocks');
+    if(blocks === null) blocks = [];
+    else blocks = JSON.parse(blocks);
+    for(let block of blocks) {
+      if(block.message === '') break;
+      let momentObj = moment(parseInt(block.date));
+      if(momentObj.date() === moment().date()) {
+        this.timeBlocks[momentObj.format('hhA')].message = block.message;
+      }
+    }
+
+    this.updateDisplay();
+  }
 }
 
+// Globally declaring TimeBlocks class.
 const timeBlocks = new TimeBlocks('#time-blocks');
 
 jQuery(function($) {
   // Displaying current date at top of the page.
   $('#currentDay').text(moment().format('dddd, MMMM Do'));
+
+  // Setting TimeBlock objects to the TimeBlocks Object for times 9AM-5PM
   for(let i = 0; i < 9; i++) {
     let momentObj = moment();
     momentObj.hours(i+9);
     timeBlocks.timeBlock(momentObj);
   }
 
+  // Setting focus, blur. and click events.
   timeBlocks
     .container
     .on('focus', '[contenteditable]', onFocusEvent)
     .on('blur', '[contenteditable]',onBlurEvent)
     .on('click', 'button', onClickSaveEvent)
 
+  // Setting modal events.
   $('.modal').on('click', 'button', onModalConfirmEvent)
+
+  // Loading data from the localStorage.
+  timeBlocks.loadFromLocalStorage();
 });
 
 /**
@@ -222,6 +239,7 @@ function onModalConfirmEvent(event) {
 
   if(self.attr('id') === 'save-changes') {
     timeBlocks.save(id);
+    timeBlocks.saveToLocalStorage();
   } else {
     timeBlocks.revert(id);
   }
